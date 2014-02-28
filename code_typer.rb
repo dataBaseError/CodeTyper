@@ -1,5 +1,6 @@
 #!/usr/bin/ruby
 require 'io/console'
+require_relative 'utility'
 
 $values = ""
 
@@ -98,4 +99,5 @@ if ARGV.size >= 1
 end
 
 system "clear"
+root_folder = checkForwardSlash(root_folder)
 parseDirectory(root_folder)
