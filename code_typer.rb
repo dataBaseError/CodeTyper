@@ -93,11 +93,11 @@ if ARGV.size >= 1
         $hidden_files = ARGV[1]
 
         if ARGV.size == 3
-            $amount = ARGV[2]
+            $amount = ARGV[2].to_i      
         end
     end
 end
 
-system "clear"
+#system "clear"
 root_folder = checkForwardSlash(root_folder)
 parseDirectory(root_folder)
