@@ -1,6 +1,7 @@
 #!/usr/bin/ruby
 require 'io/console'
 require_relative 'utility'
+require_relative 'valid_files'
 
 $values = ""
 
@@ -18,7 +19,10 @@ def parseDirectory(path)
 
             # Check if the its a hidden file 
             if !$hidden_files || name[0] != "."
-                parseFile("#{path}#{name}")
+
+                if FilesValidator::validate(name) 
+                    parseFile("#{path}#{name}")
+                end
             end
             
         elsif name != "." || name != ".."
@@ -98,6 +102,6 @@ if ARGV.size >= 1
     end
 end
 
-#system "clear"
+system "clear"
 root_folder = checkForwardSlash(root_folder)
 parseDirectory(root_folder)
