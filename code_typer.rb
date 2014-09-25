@@ -3,7 +3,9 @@ require 'io/console'
 require_relative 'utility'
 require_relative 'valid_files'
 
-$values = ""
+$values = Array.new
+
+EXIT_KEY_WORD = "exit\r"
 
 def parseDirectory(path)
 
@@ -13,19 +15,21 @@ def parseDirectory(path)
         Kernel::abort("Invalid folder")
     end
 
+    path = checkForwardSlash(path)
+
     file_names.each do |name|
 
         if !File.directory?("#{path}#{name}")
 
             # Check if the its a hidden file 
-            if !$hidden_files || name[0] != "."
+            if !$hidden_files && name[0] != "."
 
                 if FilesValidator::validate(name) 
                     parseFile("#{path}#{name}")
                 end
             end
             
-        elsif name != "." || name != ".."
+        elsif name != "." && name != ".."
             parseDirectory("#{path}#{name}")
         end
     end
@@ -61,21 +65,16 @@ def checkExit(input)
 
     exitValue = false
 
-    if input == "e" && $values == ""
-        $values += input
-    elsif input == "x" && $values == "e"
-        $values += input
-    elsif input == "i" && $values == "ex"
-        $values += input
-    elsif input == "t" && $values == "exi"
-        $values += input
-    elsif input == "\r" && $values == "exit"
-        $values = ""
+    if $values.size == EXIT_KEY_WORD.size
+        $values.shift
+    end
+    
+    $values << input
+
+    if $values.join == EXIT_KEY_WORD
         exitValue = true
     elsif input == "\u0003"
         exitValue = true
-    else
-        $values = ""
     end
 
     if exitValue
