@@ -1,8 +1,7 @@
 class TextParser
 
-    def initialize(char_per_key=3, auto_write=false)
+    def initialize(char_per_key=3)
         @char_per_key = char_per_key
-        @auto_write = auto_write
     end
 
 
@@ -11,7 +10,7 @@ class TextParser
         index = 0
         text.each_char do |char|
 
-            if !@auto_write
+            if block_given?
                 if index % @char_per_key == 0
                     input = STDIN.getch
 
@@ -20,11 +19,12 @@ class TextParser
                 end
                 index+=1
             else
-                # Use sleeper
+                # Use sleeper   
                 begin
-                    sleep(1.0/20.0)
-                rescue Exception => e
-                    exit(1)
+                    sleep(10.0/60.0)
+                rescue Interrupt => e
+                    system "clear"
+                    Kernel::exit()  
                 end
             end
 

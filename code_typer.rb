@@ -13,7 +13,8 @@ class CodeTyper
     ESCAPE_CHAR = "\u0003"
 
     def initialize(hidden_files=false, char_per_key=3, auto_write=false)
-        @text_parser = TextParser.new(char_per_key, auto_write)
+        @text_parser = TextParser.new(char_per_key)
+        @auto_write = auto_write
         @hidden_files = hidden_files
         @values = Array.new
     end
@@ -52,9 +53,14 @@ class CodeTyper
         if File.size?(path) != nil
             File.open(path, "r").each_line do |line|
 
-                @text_parser.parseText(line) do |char|
-                    checkExit(char)
+                block = ""
+
+                if !@auto_write
+                    block = " { |char| checkExit(char) }"
                 end
+
+                # Define a block given input args
+                eval "@text_parser.parseText(line)#{block}" 
             end
 
             # Space between the files
