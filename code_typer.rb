@@ -2,105 +2,101 @@
 require 'io/console'
 require_relative 'utility'
 require_relative 'valid_files'
+require_relative 'text_parser'
 
-$values = Array.new
+class CodeTyper
 
-EXIT_KEY_WORD = "exit\r"
+    # Input exit keyword
+    EXIT_KEY_WORD = "exit\r"
 
-def parseDirectory(path)
+    # Control-C input character
+    ESCAPE_CHAR = "\u0003"
 
-    if Dir.exist?(path)
-        file_names = Dir.entries(path)
-    else
-        Kernel::abort("Invalid folder")
+    def initialize(hidden_files=false, char_per_key=3, auto_write=false)
+        @text_parser = TextParser.new(char_per_key, auto_write)
+        @hidden_files = hidden_files
+        @values = Array.new
     end
 
-    path = checkForwardSlash(path)
+    def parseDirectory(path)
 
-    file_names.each do |name|
-
-        if !File.directory?("#{path}#{name}")
-
-            # Check if the its a hidden file 
-            if !$hidden_files && name[0] != "."
-
-                if FilesValidator::validate(name) 
-                    parseFile("#{path}#{name}")
-                end
-            end
-            
-        elsif name != "." && name != ".."
-            parseDirectory("#{path}#{name}")
+        if Dir.exist?(path)
+            file_names = Dir.entries(path)
+        else
+            raise "Invalid folder"
         end
-    end
-end
 
-def parseFile(path)
+        path = checkForwardSlash(path)
 
-    # Actually read the file contents for each key stroke
-    if File.size?(path) != nil
-        File.open(path, "r").each_line do |line|
+        file_names.each do |name|
 
-            index = 0
+            if !File.directory?("#{path}#{name}")
 
-            line.each_char do |char|
+                # Check if the its a hidden file 
+                if !@hidden_files && name[0] != "."
 
-                if index % $amount == 0
-                    input = STDIN.getch
-
-                    checkExit(input)
-                    index = 0
+                    if FilesValidator::validate(name) 
+                        parseFile("#{path}#{name}")
+                    end
                 end
-
-                print char
-
-                index+=1
+                
+            elsif name != "." && name != ".."
+                parseDirectory("#{path}#{name}")
             end
         end
-        print "\n\n"
-    end
-end
-
-def checkExit(input)
-
-    exitValue = false
-
-    if $values.size == EXIT_KEY_WORD.size
-        $values.shift
-    end
-    
-    $values << input
-
-    if $values.join == EXIT_KEY_WORD
-        exitValue = true
-    elsif input == "\u0003"
-        exitValue = true
     end
 
-    if exitValue
-        system "clear"
+    def parseFile(path)
 
-        puts "Access Granted"
-        Kernel::exit()
+        # Actually read the file contents for each key stroke
+        if File.size?(path) != nil
+            File.open(path, "r").each_line do |line|
+
+                @text_parser.parseText(line) do |char|
+                    checkExit(char)
+                end
+            end
+
+            # Space between the files
+            print "\n\n"
+        end
+    end
+
+    def checkExit(input)
+
+        if @values.size == EXIT_KEY_WORD.size
+            @values.shift
+        end
+        
+        @values << input
+
+        if @values.join == EXIT_KEY_WORD || input == ESCAPE_CHAR
+            system "clear"
+
+            puts "Access Granted"
+            Kernel::exit()
+        end
     end
 end
 
 root_folder = "./"
-$hidden_files = false
-$amount = 3
+hidden_files = false
+char_per_key = 3
+auto_writer = true
 
 if ARGV.size >= 1
     root_folder = ARGV[0]
 
     if ARGV.size >= 2 
-        $hidden_files = ARGV[1]
+        hidden_files = ARGV[1]
 
         if ARGV.size == 3
-            $amount = ARGV[2].to_i      
+            char_per_key = ARGV[2].to_i      
         end
     end
 end
 
 system "clear"
-root_folder = checkForwardSlash(root_folder)
-parseDirectory(root_folder)
+
+hacker = CodeTyper.new(hidden_files, char_per_key, false)
+hacker.parseDirectory(checkForwardSlash(root_folder))
