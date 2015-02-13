@@ -88,7 +88,7 @@ end
 root_folder = "./"
 hidden_files = false
 char_per_key = 3
-auto_writer = true
+auto_writer = false
 
 if ARGV.size >= 1
     root_folder = ARGV[0]
@@ -104,5 +104,5 @@ end
 
 system "clear"
 
-hacker = CodeTyper.new(hidden_files, char_per_key, false)
+hacker = CodeTyper.new(hidden_files, char_per_key, auto_writer)
 hacker.parseDirectory(checkForwardSlash(root_folder))
